@@ -96,13 +96,3 @@ sure_markup = types.ReplyKeyboardMarkup(row_width=2,resize_keyboard=True)
 sure_markup_b1 = types.KeyboardButton("Yes")
 sure_markup_b2 = types.KeyboardButton("No")
 sure_markup.add(sure_markup_b1,sure_markup_b2)
-
-
-
-
-
-blah_markup = types.ReplyKeyboardMarkup(row_width=1,resize_keyboard=True)
-blah_markup_b1 = types.KeyboardButton("1")
-blah_markup_b2 = types.KeyboardButton("2")
-blah_markup_b3 = types.KeyboardButton("3")
-blah_markup.add(blah_markup_b1,blah_markup_b2,blah_markup_b3)
