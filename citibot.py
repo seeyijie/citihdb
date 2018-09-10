@@ -10,7 +10,7 @@ import logging
 
 
 #### Variables
-bot_token = ""
+bot_token = ""  #Insert your token!
 
 mstatus = None
 joint = None
@@ -135,7 +135,6 @@ def searchProperty(message):
 	
 	global messageStorage
 	messageStorage = []
-	# Doesnt work if no results are found. Bot will not respond.
 	for index, listing in enumerate(longdict):
 		messageStorage.append(str(longdict[listing]).strip("{}").replace(":'","").replace("'", ''))
 
