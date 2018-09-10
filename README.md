@@ -10,7 +10,7 @@ Prerequisites
 Follow the instructions in the various links attached to install them properly.
 1. Python 3 (https://www.python.org/) -- one of the most powerful programming language
 2. PyTelegrambotAPI (https://github.com/eternnoir/pyTelegramBotAPI) -- a sleek tool to host a Telegram bot
-3. Request package (https://pypi.org/project/requests/) -- 
+3. Request package (https://pypi.org/project/requests/)
 4. BeautifulSoup4 (https://pypi.org/project/beautifulsoup4/) -- parsing HTML and XML documents; used for web scraping
 5. Clone our repository!
 
@@ -33,11 +33,13 @@ C:\Users\jem\citihdb>
 1. Clone repository and save it in your Desktop (i.e. C:\Users\jem\citihdb)
 2. If you have your own IDE or programmes to run python script file, you may do so at your own comfort. Or else, open up command prompt
 (win key > search 'cmd' > enter)
+![alt text](https://github.com/jeremyng123/citihack/blob/master/cmd%20in%20windows.png?raw=true)
 3. Point your command prompt to the directory that contains our git repository by typing
 ```
 C:\Users\jem>cd citihdb
 C:\Users\jem\citihdb>
 ```
+![alt text](https://github.com/jeremyng123/citihack/blob/master/cmd_cd.png?raw=true)
 4. Follow the instructions at https://core.telegram.org/bots to learn how to create your own bot.
 
 5. Once you have gotten your own bot Token (step 4), use your own favorite text editor (in our case, we use [Atom] (https://atom.io/)) and open up `CitiBot.py`.
