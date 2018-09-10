@@ -8,50 +8,50 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
-
+sort = ""
 # In[2]:
 
 
 # Group 1
 # Core Central Districts => &selectedDistrictIds=1,2,4,6,7,9,10,11
 """
-D1 - Temasek Blvd, Raffles Link  
-D2 - Anson, Tanjong Pagar  
-D4 - Telok Blangah, Harbourfront 
-D6 - High Street, Beach Road  
-D7 - Middle Road, Golden Mile  
-D9 - Orchard, Cairnhill, River Valley 
-D10 - Bukit Timah, Holland Rd, Tanglin  
+D1 - Temasek Blvd, Raffles Link
+D2 - Anson, Tanjong Pagar
+D4 - Telok Blangah, Harbourfront
+D6 - High Street, Beach Road
+D7 - Middle Road, Golden Mile
+D9 - Orchard, Cairnhill, River Valley
+D10 - Bukit Timah, Holland Rd, Tanglin
 D11 - Watten Estate, Novena, Thomson
 """
 # Group 2
 # Rest of Central Region => &selectedDistrictIds=2,3,7,8,12,13,14,15
 """
-D2 - Anson, Tanjong Pagar  
-D3 - Queenstown, Tiong Bahru  
-D7 - Middle Road, Golden Mile 
-D8 - Little India  
-D12 - Balestier, Toa Payoh, Serangoon  
-D13 - Macpherson, Braddell 
-D14 - Geylang, Eunos  
+D2 - Anson, Tanjong Pagar
+D3 - Queenstown, Tiong Bahru
+D7 - Middle Road, Golden Mile
+D8 - Little India
+D12 - Balestier, Toa Payoh, Serangoon
+D13 - Macpherson, Braddell
+D14 - Geylang, Eunos
 D15 - Katong, Joo Chiat, Amber Road
 """
 # Group 3
 # Outside Central Region => &selectedDistrictIds=5,16,17,18,19,20,21,22,23,24,25,26,27,28
 """
-D5 - Pasir Panjang, Clementi  
-D16 - Bedok, Upper East Coast  
-D17 - Loyang, Changi 
-D18 - Tampines, Pasir Ris  
-D19 - Serangoon, Hougang, Punggol  
-D20 - Bishan, Ang Mo Kio 
-D21 - Upper Bukit Timah, Ulu Pandan  
-D22 - Jurong  
-D23 - Bukit Panjang, Choa Chu Kang 
-D24 - Lim Chu Kang, Tengah  
-D25 - Kranji, Woodgrove  
-D26 - Upper Thomson, Springleaf 
-D27 - Yishun, Sembawang  
+D5 - Pasir Panjang, Clementi
+D16 - Bedok, Upper East Coast
+D17 - Loyang, Changi
+D18 - Tampines, Pasir Ris
+D19 - Serangoon, Hougang, Punggol
+D20 - Bishan, Ang Mo Kio
+D21 - Upper Bukit Timah, Ulu Pandan
+D22 - Jurong
+D23 - Bukit Panjang, Choa Chu Kang
+D24 - Lim Chu Kang, Tengah
+D25 - Kranji, Woodgrove
+D26 - Upper Thomson, Springleaf
+D27 - Yishun, Sembawang
 D28 - Seletar
 """
 def districtFilter(groupCode):
@@ -75,7 +75,7 @@ districtPicker(12)
 # In[3]:
 
 
-# property type: 
+# property type:
 #hdb?cdResearchSubTypes=16,17,1,2,3,4,18,19 => 1 room, 2 room, 3 room, 4 room, 5 room, executive, hudc, hdb multi-gen
 
 
@@ -131,15 +131,15 @@ def budget(minimum,maximum):
 def addPropertyTypeFilter(*args):
     #Returns a list of property filter to be applied
     return list(args)
-        
-def urlGenerator(addPropertyTypeFilter_, budget, districtFilter=''):
+
+def urlGenerator(addPropertyTypeFilter_, budget, districtFilter='',sort=''):
     # get the total number of fields for property and generate the respective url query points
     #limitation is hdb must come first followed by condo/landed
     hdbCounter = 0
     newPropertyQueryList=[]
     otherPropertyCounter = 0
     #search for hdb and if it exist, change it to the mapped part of the query string and store it in a new list.
-    for property_ in addPropertyTypeFilter_: 
+    for property_ in addPropertyTypeFilter_:
         if property_[:3:] == 'hdb':
             if hdbCounter >= 1:
                 newPropertyQueryList.append(','+hdbTypeFilter(property_)[:-2:-1])
@@ -151,11 +151,11 @@ def urlGenerator(addPropertyTypeFilter_, budget, districtFilter=''):
         #only possibility is condo or landed
         elif len(addPropertyTypeFilter_)==1:
             newPropertyQueryList.append(property_)
-        
+
         elif (property_ == 'landed' or property_ == 'condo') and otherPropertyCounter == 0 and hdbCounter==0:
             newPropertyQueryList.append(property_)
             otherPropertyCounter+=1
-            
+
         else:
             newPropertyQueryList.append('&'+property_)
 
@@ -163,9 +163,21 @@ def urlGenerator(addPropertyTypeFilter_, budget, districtFilter=''):
     propertyTypeString = ''
     for i in newPropertyQueryList:
         propertyTypeString += i
-    
-    baseUrl = "https://www.srx.com.sg/search/sale/{}&minSalePrice={}&maxSalePrice={}{}&view=table".format(
-        propertyTypeString,budget[0],budget[1],districtFilter)
+
+    #set sorting options for baseURL
+    if sort == "None":
+        sort = ""
+    elif sort == "addr": #sort by asc address
+        sort = "&orderCriteria=addressAsc"
+    elif sort == "price":
+        sort = "&orderCriteria=priceAsc"
+    elif sort == "size":
+        sort = "&orderCriteria=sizeAsc"
+    elif sort == "psf":
+        sort = "&orderCriteria=psfAsc"
+
+    baseUrl = "https://www.srx.com.sg/search/sale/{}&minSalePrice={}&maxSalePrice={}{}&view=table{}".format(
+        propertyTypeString,budget[0],budget[1],districtFilter,sort)
     print(baseUrl)
     return(baseUrl)
 
@@ -191,28 +203,28 @@ def getListingLinks(url):
     soup = BeautifulSoup(response.content, 'html.parser')
     pageNumberElement = soup.find_all(class_='has-properties')
     maxPageNumber = int(pageNumberElement[0].find_all('strong')[1].text)
-    
+
     baseUrl = 'https://www.srx.com.sg'
     urlPage = []
     urlListing = []
-    
+
     #cap it at 2 pages for now.
     if maxPageNumber > 1:
         for i in range(1,2+1):
             print(str(i) + 'th iteration already!')
             urlPage.append((url+'&page={}'.format(i)))
 #             print(urlPage)
-            
+
             response = requests.get(urlPage[i-1])
             soup = BeautifulSoup(response.content, 'html.parser')
-            listingLink = soup.find_all(class_='listing-table-view-id')     
+            listingLink = soup.find_all(class_='listing-table-view-id')
 
             for i in listingLink:
                 info = str(i.find_all('a')[0])
                 cleanInfo = re.findall(r'"(.*?)"', info)[0]
 #                 print(cleanInfo)
                 urlListing.append((baseUrl+cleanInfo))
-            
+
 #             print(len(urlListing))
         return(urlListing)
 
@@ -223,20 +235,20 @@ def getListingLinks(url):
 #             print(urlPage)
 #             print(urlListing)
 
-            
+
             response = requests.get(urlPage[i-1])
             soup = BeautifulSoup(response.content, 'html.parser')
-            listingLink = soup.find_all(class_='listing-table-view-id')     
+            listingLink = soup.find_all(class_='listing-table-view-id')
 
             for i in listingLink:
                 info = str(i.find_all('a')[0])
                 cleanInfo = re.findall(r'"(.*?)"', info)[0]
 #                 print(cleanInfo)
                 urlListing.append((baseUrl+cleanInfo))
-            
+
             print(len(urlListing))
         return(urlListing)
-            
+
 # getListingLinks('https://www.srx.com.sg/search/sale/condo?minSalePrice=500000&maxSalePrice=1000000&view=table')
 
 
@@ -308,4 +320,3 @@ def getAllListingDetails(listOfUrl):
 
 # computation4 = urlGenerator(addPropertyTypeFilter('condo'), budget(600000,700000), districtPicker(2))
 # getAllListingDetails(getListingLinks(computation4))
-
