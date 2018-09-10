@@ -15,7 +15,7 @@ Follow the instructions in the various links attached to install them properly.
 5. Clone our repository!
 
 ### Running the tests
-If you encountered any problems, please refer to the top of this page for possible missing dependencies.
+If you encountered any problems in the process, please refer to the top of this page under *Prerequisites* for possible missing dependencies.
 
 1. Clone repository and save it in your Desktop (i.e. C:\Users\jem\citihdb)
 2. If you have your own IDE or programmes to run python script file, you may do so at your own comfort. Or else, open up command prompt
