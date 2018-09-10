@@ -26,7 +26,7 @@ If you encountered any problems in the process, please refer to the top of this 
 C:\Users\jem>cd citihdb
 C:\Users\jem\citihdb>
 ```
-4. in cmd, type 'python citibot.py'. A prompt will appear in the command prompt. Once you see "____", your server is up and running.
+4. in cmd, type 'python citibot.py'. A prompt will appear in the command prompt.
 5. Go to Telegram and search for @Citibot. Type /start command and follow the instructions given by our bot.
 
 ### Running the server with your own bot
@@ -48,7 +48,10 @@ bot_token = "500756386:AAFPCzG-QX8Oa_Rd8AnJgBbZuCoGmB8p0Vp"
 ```
 and replace the string stored in `bot_token` to your own bot Token.
 
+7. If you have your own IDE or programmes to run python script file, you may do so at your own comfort. Or else, open up command prompt
+(win key > search 'cmd' > enter)
 
+8. Point your command prompt to the directory that contains our git repository by typing
 
 
 ### Authors
