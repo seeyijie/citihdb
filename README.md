@@ -15,7 +15,7 @@ Follow the instructions in the various links attached to install them properly.
 5. Clone our repository!
 
 ## Running the tests
-If you encountered any problems in the process, please refer to the top of this page under *Prerequisites* for possible missing dependencies.
+If you encountered any problems in the process, please refer to the top of this page under **Prerequisites** for possible missing dependencies.
 
 ### Running the server for us
 1. Clone repository and save it in your Desktop (i.e. C:\Users\jem\citihdb)
@@ -30,9 +30,25 @@ C:\Users\jem\citihdb>
 5. Go to Telegram and search for @Citibot. Type /start command and follow the instructions given by our bot.
 
 ### Running the server with your own bot
-Follow the first 4 steps above
+1. Clone repository and save it in your Desktop (i.e. C:\Users\jem\citihdb)
+2. If you have your own IDE or programmes to run python script file, you may do so at your own comfort. Or else, open up command prompt
+(win key > search 'cmd' > enter)
+3. Point your command prompt to the directory that contains our git repository by typing
+```
+C:\Users\jem>cd citihdb
+C:\Users\jem\citihdb>
+```
+4. Follow the instructions at https://core.telegram.org/bots to learn how to create your own bot.
 
-Follow the instructions at https://core.telegram.org/bots to learn how to create your own bot.
+5. Once you have gotten your own bot Token (step 4), use your own favorite text editor (in our case, we use [Atom] (https://atom.io/)) and open up `CitiBot.py`.
+
+6. Search for:
+```
+bot_token = "500756386:AAFPCzG-QX8Oa_Rd8AnJgBbZuCoGmB8p0Vk"
+```
+and replace the string stored in `bot_token` to your own bot Token.
+
+
 
 
 ### Authors
