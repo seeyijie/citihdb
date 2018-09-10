@@ -52,11 +52,11 @@ and replace the string stored in `bot_token` to your own bot Token.
 
 
 ### Authors
-See Yi Jie - Research and coding using **web scraping**, did an impressive job in the UI for **Telegram Bot**
+See Yi Jie (seeyijie) - Research and coding using **web scraping**, did an impressive job in the UI for **Telegram Bot**
 
-Ashlyn - Research and coding of the **eligibility and affordibility**.
+Ashlyn (gexty444) - Research and coding of the **eligibility and affordibility**.
 
-Jeremy - Debugging and tidying up of the code
+Jeremy (jeremyng123) - Debugging and tidying up of the code
 
 
 
