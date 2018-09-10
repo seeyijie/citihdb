@@ -54,7 +54,7 @@ and replace the string stored in `bot_token` to your own bot Token.
 ### Authors
 See Yi Jie - **Web scraping**, **UI & UX** of the Telegram Bot
 
-Ashlyn - Research and coding of the **eligibility and affordibility**.
+Ashlyn - Research of HDB Schemes & coding of the **eligibility and affordability** portion.
 
 Jeremy - **UI & UX** of Telegram Bot
 
