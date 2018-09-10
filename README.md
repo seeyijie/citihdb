@@ -44,7 +44,7 @@ C:\Users\jem\citihdb>
 
 6. Search for:
 ```
-bot_token = "500756386:AAFPCzG-QX8Oa_Rd8AnJgBbZuCoGmB8p0Vk"
+bot_token = "500756386:AAFPCzG-QX8Oa_Rd8AnJgBbZuCoGmB8p0Vp"
 ```
 and replace the string stored in `bot_token` to your own bot Token.
 
@@ -52,13 +52,11 @@ and replace the string stored in `bot_token` to your own bot Token.
 
 
 ### Authors
-See Yi Jie (seeyijie) - Research and coding using **web scraping**, did an impressive job in the UI for **Telegram Bot**
+See Yi Jie - **Web scraping**, **UI & UX** of the Telegram Bot
 
-Ashlyn (gexty444) - Research and coding of the **eligibility and affordibility**.
+Ashlyn - Research and coding of the **eligibility and affordibility**.
 
-Jeremy (jeremyng123) - Debugging and tidying up of the code
-
-
+Jeremy - **UI & UX** of Telegram Bot
 
 
 ## Acknowledgments
