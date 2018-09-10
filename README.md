@@ -14,28 +14,35 @@ Follow the instructions in the various links attached to install them properly.
 4. BeautifulSoup4 (https://pypi.org/project/beautifulsoup4/) -- parsing HTML and XML documents; used for web scraping
 5. Clone our repository!
 
-### Running the tests
+## Running the tests
 If you encountered any problems in the process, please refer to the top of this page under *Prerequisites* for possible missing dependencies.
 
+### Running the server for us
 1. Clone repository and save it in your Desktop (i.e. C:\Users\jem\citihdb)
 2. If you have your own IDE or programmes to run python script file, you may do so at your own comfort. Or else, open up command prompt
 (win key > search 'cmd' > enter)
-3. Point your command prompt to the directory that contains our git repository
-4. in cmd, type 'python citibot.py'. A prompt will appear in the command prompt. Once you see " ____", your server is up and running.
+3. Point your command prompt to the directory that contains our git repository by typing
+```
+C:\Users\jem>cd citihdb
+C:\Users\jem\citihdb>
+```
+4. in cmd, type 'python citibot.py'. A prompt will appear in the command prompt. Once you see "____", your server is up and running.
 5. Go to Telegram and search for @Citibot. Type /start command and follow the instructions given by our bot.
 
-Break down into end to end tests
-Explain what these tests test and why
+### Running the server with your own bot
+Follow the first 4 steps above
+
+Follow the instructions at https://core.telegram.org/bots to learn how to create your own bot.
 
 
-Authors
+### Authors
 See Yi Jie - 
 Ashlyn -
 Jeremy -
 
 
 
-Acknowledgments
+## Acknowledgments
 Hat tip to anyone whose code was used
 Inspiration
 etc
