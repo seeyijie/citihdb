@@ -7,6 +7,10 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import logging
+import redis
+import datetoday as d
+
+r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 
 #### Variables
@@ -19,21 +23,21 @@ citizenship1 = None
 citizenship2 = None
 scheme = None
 
-funds = None
+funds = None # Savings
 joint2 = None
-income1 = None
-com1 = None
-funds2 = None
-income2 = None
-com2 = None
+income1 = None # Income - Single
+com1 = None # Financial Commitment for 1st person
+funds2 = None # Savings for 2nd person
+income2 = None # Income - Joint (for the second person)
+com2 = None # Financial Commitment for 2nd person
 
 affordability = None
 
-budget = None
-districtCode = None
+budget = None # Budget
+districtCode = None # Area Code
 minimum = None
 maximum = None
-propertyTypeSelection = None
+propertyTypeSelection = None # Property Type Selection
 districtIdentifier = None
 propertyTypeIdentifier = None
 messageStorage = []
@@ -85,13 +89,18 @@ telebot.logger.setLevel(logging.DEBUG)
 #### Handlers
 @bot.message_handler(commands=['start'])
 def send_introduction(message):
-	bot.send_message(message.chat.id, "Hi! I am your friendly Housing Bot, able to help you analyse your financial situation and eligibility for\
-		properties. Also, I can help you search for properties based on your budget and requirements! \n\n Sounds exciting? Enter any of the \
+	r.hmset(message.chat.id, {"lastupdated":d.today()})
+	print(message.chat.id) #Your user id = 276269485
+	print('\n\n\n\n\n')
+	print(r.hgetall(message.chat.id))
+	print('\n\n\n\n\n')
+
+	bot.send_message(message.chat.id, """Hi! I am your friendly Housing Bot, able to help you analyse your financial situation and eligibility for\
+		properties. Also, I can help you search for properties based on your budget and requirements! \n\n Sounds exciting? Enter any of the\
 		following commands to try out!\n'/ask': To analyse your financial situation and eligibility for properties\n\n\
 		'/mypref': To set up your preferences BEFORE the property search\n\n\
 		'/searchnow': To search for properties based on your budget and requirements\n\n\
-		'/info': To assess your saved profile and preferences")
-
+		'/info': To assess your saved profile and preferences""")
 
 @bot.message_handler(commands=['ask'])
 def send_welcome(message):
@@ -101,6 +110,9 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['help'])
 def send_help(message):
+	print(r.hgetall("message.chat.id"))
+	print('\n\n\n\n\n')
+
 	text= "To use this bot, use the following commands:\n\n'/ask': To analyse your financial situation and eligibility for properties\n\n\
 	'/mypref': To set up your preferences BEFORE the property search\
 	'/searchnow': To search for properties based on your budget and requirements\n\n\
@@ -132,11 +144,13 @@ def searchProperty(message):
 	bot.send_message(message.chat.id, 'Searching in progress\nPlease wait patiently')
 
 	longdict = citi.getAllListingDetails(citi.getListingLinks(new_url))
-	
+
 	global messageStorage
 	messageStorage = []
 	for index, listing in enumerate(longdict):
 		messageStorage.append(str(longdict[listing]).strip("{}").replace(":'","").replace("'", ''))
+
+	r.hmset(message.chat.id, {"lastupdated":d.today(),"propertylistingsData":messageStorage})
 
 	keyboard = types.InlineKeyboardMarkup()
 	nextButton = types.InlineKeyboardButton(text='Next', callback_data='next')
@@ -145,7 +159,7 @@ def searchProperty(message):
 	keyboard.row(favButton)
 	bot.send_message(message.chat.id, messageStorage[0], reply_markup=keyboard)
 	bot.send_message(message.chat.id, "If you would like me to do other things for you, just enter '/start'! :)")
-	
+
 	#call back data to get the next in line
 
 
@@ -323,7 +337,7 @@ def whattype(message):
 	else:
 		msg = bot.send_message(chat_id, "I am sorry, I didn't quite catch that... Please try again")
 		bot.register_next_step_handler(msg, whattype)
-	
+
 def assess(message):
 	chat_id = message.chat.id
 	bot.send_chat_action(chat_id, 'typing')
@@ -348,7 +362,7 @@ def assess_joint(message):
 		global citizenship2
 		citizenship2 = message.text
 		assessing(chat_id)
-		
+
 	else:
 		msg = bot.send_message(chat_id, "I am sorry, I didn't quite catch that... Please try again")
 		bot.register_next_step_handler(msg, assess_joint)
@@ -425,31 +439,31 @@ def whatjoint(message):
 			joint2 = "On my own"
 			msg = bot.send_message(chat_id, "How much funds do you have available? (Include your CPF OA savings, Personal Savings and any grant available)\
 				To find out more about the grants available for your scheme, visit https://www.hdb.gov.sg/cs/infoweb/residential/buying-a-flat/new/schemes-and-grants/cpf-housing-grants-for-hdb-flats/single-singapore-citizen-scheme\
-				\n\nPlease enter a whole number", 
+				\n\nPlease enter a whole number",
 				reply_markup=mark)
 			bot.register_next_step_handler(msg, whatsalary)
 		elif scheme == "jss":
 			joint2 = "On my own"
 			msg = bot.send_message(chat_id, "How much funds do you have available? (Include your CPF OA savings, Personal Savings and any grant available)\
 				To find out more about the grants available for your scheme, visit https://www.hdb.gov.sg/cs/infoweb/residential/buying-a-flat/new/joint-singles-scheme-or-orphans-scheme\
-				\n\nPlease enter a whole number", 
+				\n\nPlease enter a whole number",
 				reply_markup=mark)
 			bot.register_next_step_handler(msg, whatsalary)
 		elif scheme == "ncs":
 			joint2 = "With a partner"
 			msg = bot.send_message(chat_id, "How much funds do you have available? (Include your CPF OA savings, Personal Savings and any grant available)\
 				To find out more about the grants available for your scheme, visit https://www.hdb.gov.sg/cs/infoweb/residential/buying-a-flat/new/non-citizen-spouse-scheme\
-				\n\nPlease enter a whole number", 
+				\n\nPlease enter a whole number",
 				reply_markup=mark)
 			bot.register_next_step_handler(msg, whatsalary)
 		elif scheme == "public" or scheme == "ff":
 			joint2 = "With a partner"
 			msg = bot.send_message(chat_id, "How much funds do you have available? (Include your CPF OA savings, Personal Savings and any grant available)\
 				To find out more about the grants available for your scheme, visit https://www.hdb.gov.sg/cs/infoweb/residential/buying-a-flat/new/first-timer-applicants\
-				\n\nPlease enter a whole number", 
+				\n\nPlease enter a whole number",
 				reply_markup=mark)
 			bot.register_next_step_handler(msg, whatsalary)
-	
+
 	elif message.text =="No":
 		msg = bot.send_message(chat_id, "Are you buying a home on your own or with a partner?", reply_markup=m.type_markup)
 		bot.register_next_step_handler(msg, grant)
@@ -467,7 +481,7 @@ def grant(message):
 		joint2 = message.text
 		msg = bot.send_message(chat_id, "How much funds do you have available? (Include your CPF OA savings, Personal Savings and any grant available)\
 				To find out more about the grants available, visit https://www.hdb.gov.sg/cs/infoweb/residential/buying-a-flat/new/cpf-housing-grants-for-hdb-flats\
-				\n\nPlease enter a whole number", 
+				\n\nPlease enter a whole number",
 				reply_markup=mark)
 		bot.register_next_step_handler(msg, whatsalary)
 	else:
@@ -481,6 +495,8 @@ def whatsalary(message):
 	if message.text.isdigit():
 		global funds
 		funds = int(message.text)
+		r.hmset(message.chat.id,{"lastupdated":d.today(),"savings1":funds}) # Money saved for house of the first person
+
 		msg = bot.send_message(chat_id, "What is your gross monthly income?\n\nPlease enter a whole number")
 		bot.register_next_step_handler(msg, whatcom)
 	else:
@@ -494,6 +510,8 @@ def whatcom(message):
 	if message.text.isdigit():
 		global income1
 		income1 = int(message.text)
+		r.hmset(message.chat.id,{"lastupdated":d.today(),"income1":income1}) #Monthly income of the first person
+
 		msg = bot.send_message(chat_id, "What is your monthly financial commitments and living expenses? (Eg. Car loans, credit card loans, personal loans.)\
 			\n\nPlease enter a whole number")
 		bot.register_next_step_handler(msg, assess_afford)
@@ -508,6 +526,8 @@ def assess_afford(message):
 		global com1
 		global affordability
 		com1 = int(message.text)
+		r.hmset(message.chat.id,{"lastupdated":d.today(),"f_commitment1":com1}) #Saving the financial commitment of the 1st person
+
 		if joint2 == "On my own":
 			affordability = assessing_afford(chat_id)
 			bot.send_message(chat_id, "Your maximum affordability calculated is ${}.\
@@ -522,8 +542,8 @@ def assess_afford(message):
 		bot.register_next_step_handler(msg, assess_afford)
 
 def assessing_afford(chat_id):
-	# To calculate max affordability, we take the smaller of the two values calculated. The first value is obtained via the assumption of 
-	# 30% Mortage Servicing Ratio. The second value is obtained via the assumption of 75% Loan to Value ratio. 
+	# To calculate max affordability, we take the smaller of the two values calculated. The first value is obtained via the assumption of
+	# 30% Mortage Servicing Ratio. The second value is obtained via the assumption of 75% Loan to Value ratio.
 	if joint2 == "On my own":
 		value_1 = (income1 - com1)*12*25*0.3 + funds
 		value_2 = funds/2.5*10
@@ -540,6 +560,8 @@ def whatsalary2(message):
 	if message.text.isdigit():
 		global funds2
 		funds2 = int(message.text)
+		r.hmset(message.chat.id,{"lastupdated":d.today(),"savings2":funds2}) # Money saved for House of the second person
+
 		msg = bot.send_message(chat_id, "What is your partner's gross monthly income? Please enter a whole number")
 		bot.register_next_step_handler(msg, whatcom2)
 	else:
@@ -552,6 +574,7 @@ def whatcom2(message):
 	if message.text.isdigit():
 		global income2
 		income2 = int(message.text)
+		r.hmset(message.chat.id,{"lastupdated":d.today(),"income2":income2}) #Monthly income of the second person
 		msg = bot.send_message(chat_id, "What is your partner's monthly financial commitments and living expenses? \
 			(Eg. Car loans, credit card loans, personal loans.) Please enter a whole number")
 		bot.register_next_step_handler(msg, assess_afford2)
@@ -567,6 +590,8 @@ def assess_afford2(message):
 		global com2
 		global affordability
 		com2 = int(message.text)
+		r.hmset(message.chat.id,{"lastupdated":d.today(),"f_commitment2":com2}) #Saving the financial commitment of the second person
+
 		affordability = assessing_afford(chat_id)
 		bot.send_message(chat_id, "Your maximum affordability calculated is ${}.\
 				For a better reflection of your affordability, do consult a bank regarding loans available for you :)".format(affordability))
@@ -583,7 +608,7 @@ def assess_afford2(message):
 def nextItemListing(call):
 	global counter, messageStorage
 	nextMessage = messageStorage[counter]
-	
+
 	keyboard = types.InlineKeyboardMarkup()
 	nextButton = types.InlineKeyboardButton(text='Next', callback_data='next')
 	previousButton = types.InlineKeyboardButton(text='Previous', callback_data='previous')
@@ -599,9 +624,9 @@ def nextItemListing(call):
 		keyboard.add(previousButton, nextButton)
 		keyboard.row(favButton)
 
-	
-	bot.edit_message_text(chat_id = call.message.chat.id, 
-						  message_id=call.message.message_id, text=str(nextMessage), reply_markup=keyboard)    
+
+	bot.edit_message_text(chat_id = call.message.chat.id,
+						  message_id=call.message.message_id, text=str(nextMessage), reply_markup=keyboard)
 
 
 @bot.callback_query_handler(func=lambda call: True)  # The other inline button calls
@@ -612,54 +637,61 @@ def callback_inline(call):
 		if call.data == 'hdb':
 			print('User has picked HDB')
 			pickHDBroom(call)
-			
+
 		elif call.data in selections:
 			print('Picking District')
 			print('User has picked a {}-room flat'.format(getDistrict(call)))
 			global propertyTypeSelection, propertyTypeIdentifier
-			
+
 			if call.data == 'hdb-1':
 				propertyTypeSelection = 'HDB: 1 Room Flat'
 				propertyTypeIdentifier = 'hdb-1'
-				
+				r.hmset(call.message.chat.id,{"lastupdated":d.today(),"property_Type":propertyTypeSelection}) #Save the property type
+
 			if call.data == 'hdb-2':
 				propertyTypeSelection = 'HDB: 2 Room Flat'
 				propertyTypeIdentifier = 'hdb-2'
-				
+				r.hmset(call.message.chat.id,{"lastupdated":d.today(),"property_Type":propertyTypeSelection}) #Save the property type
+
 			if call.data == 'hdb-3':
 				propertyTypeSelection = 'HDB: 3 Room Flat'
 				propertyTypeIdentifier = 'hdb-3'
-				
+				r.hmset(call.message.chat.id,{"lastupdated":d.today(),"property_Type":propertyTypeSelection}) #Save the property type
+
 			if call.data == 'hdb-4':
 				propertyTypeSelection = 'HDB: 4 Room Flat'
 				propertyTypeIdentifier = 'hdb-4'
-				
+				r.hmset(call.message.chat.id,{"lastupdated":d.today(),"property_Type":propertyTypeSelection}) #Save the property type
+
 			if call.data == 'hdb-5':
 				propertyTypeSelection = 'HDB: 5 Room Flat'
 				propertyTypeIdentifier = 'hdb-5'
-				
+				r.hmset(call.message.chat.id,{"lastupdated":d.today(),"property_Type":propertyTypeSelection}) #Save the property type
+
 			if call.data == 'condo':
 				propertyTypeSelection = 'Condominium'
 				propertyTypeIdentifier = 'condo'
-				
+				r.hmset(call.message.chat.id,{"lastupdated":d.today(),"property_Type":propertyTypeSelection}) #Save the property type
+
 			if call.data == 'landed':
 				propertyTypeSelection = 'Landed Property'
 				propertyTypeIdentifier = 'landed'
-				
+				r.hmset(call.message.chat.id,{"lastupdated":d.today(),"property_Type":propertyTypeSelection}) #Save the property type
+
 			getDistrict(call)
 
 		elif call.data == 'district1' or call.data == 'district2' or call.data == 'district3':
 			computeDistrict(call)
 			askBudget(call)
-			
+
 		elif call.data == 'next':
 			counter += 1
 			nextItemListing(call)
-			
+
 		elif call.data == 'previous':
 			counter -= 1
 			nextItemListing(call)
-		
+
 		elif call.data == 'fav':
 			print(call)
 			if len(favouriteList)<=1:
@@ -667,7 +699,7 @@ def callback_inline(call):
 			else:
 				bot.send_message(call.message.chat.id, 'You have a reached a maximum of 2 favourites. Enter /info to view and clear your favourited apartments.')
 			print(favouriteList)
-		
+
 		elif call.data == 'addr' or call.data == 'price' or call.data == 'size' or call.data == 'psf':
 			sort = call.data
 			finalisedPreference(call)
@@ -679,20 +711,20 @@ def getSort(message):
 	priceButton = types.InlineKeyboardButton(text='Price', callback_data='price')
 	sizeButton = types.InlineKeyboardButton(text='Size', callback_data='size')
 	psfButton = sizeButton = types.InlineKeyboardButton(text='Price per Square Feet', callback_data='psf')
-	
+
 	keyboard.row(addressButton)
 	keyboard.row(priceButton)
 	keyboard.row(sizeButton)
 	keyboard.row(psfButton)
 	bot.send_message(message.chat.id, 'Choose your preference', reply_markup=keyboard)
-	
+
 def getPropertyType(message):
 	keyboard = types.InlineKeyboardMarkup()
 	buttonHDB = types.InlineKeyboardButton(text='HDB', callback_data='hdb')
 	buttonCondo = types.InlineKeyboardButton(text='Condo',callback_data='condo')
 	buttonLanded = types.InlineKeyboardButton(text='Landed',callback_data='landed')
-	
-	
+
+
 	keyboard.add(buttonHDB, buttonCondo, buttonLanded)
 	bot.send_message(message.chat.id, 'What is the type of property?', reply_markup=keyboard)
 
@@ -713,42 +745,42 @@ def getDistrict(call):
 	button1 = types.InlineKeyboardButton(text='Core Central Districts', callback_data='district1')
 	button2 = types.InlineKeyboardButton(text='Rest of Central Region', callback_data='district2')
 	button3 = types.InlineKeyboardButton(text='Outside Central Region', callback_data='district3')
-	
-	longtext= '''<b>Choose a District:\n\nCore Central Districts</b>\n 
-	D1 - Temasek Blvd, Raffles Link\n  
-	D2 - Anson, Tanjong Pagar\n  
-	D4 - Telok Blangah, Harbourfront\n 
+
+	longtext= '''<b>Choose a District:\n\nCore Central Districts</b>\n
+	D1 - Temasek Blvd, Raffles Link\n
+	D2 - Anson, Tanjong Pagar\n
+	D4 - Telok Blangah, Harbourfront\n
 	D6 - High Street, Beach Road\n
-	D7 - Middle Road, Golden Mile\n 
-	D9 - Orchard, Cairnhill, River Valley\n 
-	D10 - Bukit Timah, Holland Rd, Tanglin\n  
+	D7 - Middle Road, Golden Mile\n
+	D9 - Orchard, Cairnhill, River Valley\n
+	D10 - Bukit Timah, Holland Rd, Tanglin\n
 	D11 - Watten Estate, Novena, Thomson\n\n
 	<b>Rest of Central Region</b>\n
-	D2 - Anson, Tanjong Pagar\n  
-	D3 - Queenstown, Tiong Bahru\n  
-	D7 - Middle Road, Golden Mile\n 
-	D8 - Little India\n  
-	D12 - Balestier, Toa Payoh, Serangoon\n  
-	D13 - Macpherson, Braddell\n 
-	D14 - Geylang, Eunos\n  
+	D2 - Anson, Tanjong Pagar\n
+	D3 - Queenstown, Tiong Bahru\n
+	D7 - Middle Road, Golden Mile\n
+	D8 - Little India\n
+	D12 - Balestier, Toa Payoh, Serangoon\n
+	D13 - Macpherson, Braddell\n
+	D14 - Geylang, Eunos\n
 	D15 - Katong, Joo Chiat, Amber Road\n\n
 	<b>Outside Central Region</b>\n
-	D5 - Pasir Panjang, Clementi\n  
-	D16 - Bedok, Upper East Coast\n 
-	D17 - Loyang, Changi\n 
-	D18 - Tampines, Pasir Ris\n  
-	D19 - Serangoon, Hougang, Punggol\n  
-	D20 - Bishan, Ang Mo Kio\n 
-	D21 - Upper Bukit Timah, Ulu Pandan\n  
-	D22 - Jurong\n  
-	D23 - Bukit Panjang, Choa Chu Kang\n 
-	D24 - Lim Chu Kang, Tengah\n  
-	D25 - Kranji, Woodgrove\n  
-	D26 - Upper Thomson, Springleaf\n 
-	D27 - Yishun, Sembawang\n  
+	D5 - Pasir Panjang, Clementi\n
+	D16 - Bedok, Upper East Coast\n
+	D17 - Loyang, Changi\n
+	D18 - Tampines, Pasir Ris\n
+	D19 - Serangoon, Hougang, Punggol\n
+	D20 - Bishan, Ang Mo Kio\n
+	D21 - Upper Bukit Timah, Ulu Pandan\n
+	D22 - Jurong\n
+	D23 - Bukit Panjang, Choa Chu Kang\n
+	D24 - Lim Chu Kang, Tengah\n
+	D25 - Kranji, Woodgrove\n
+	D26 - Upper Thomson, Springleaf\n
+	D27 - Yishun, Sembawang\n
 	D28 - Seletar'''
 	keyboard.add(button1, button2, button3)
-	
+
 	print(call)
 	print(call.data)
 	bot.edit_message_text(chat_id=call.message.chat.id,
@@ -756,60 +788,64 @@ def getDistrict(call):
 
 def computeDistrict(call):
 	global districtCode, districtIdentifier
-	
+
 	if call.data == 'district1':
 		districtIdentifier = '''Core Central Districts - inclusive of:\n\n
-		D1 - Temasek Blvd, Raffles Link\n  
-		D2 - Anson, Tanjong Pagar\n  
-		D4 - Telok Blangah, Harbourfront\n 
+		D1 - Temasek Blvd, Raffles Link\n
+		D2 - Anson, Tanjong Pagar\n
+		D4 - Telok Blangah, Harbourfront\n
 		D6 - High Street, Beach Road\n
-		D7 - Middle Road, Golden Mile\n 
-		D9 - Orchard, Cairnhill, River Valley\n 
-		D10 - Bukit Timah, Holland Rd, Tanglin\n  
+		D7 - Middle Road, Golden Mile\n
+		D9 - Orchard, Cairnhill, River Valley\n
+		D10 - Bukit Timah, Holland Rd, Tanglin\n
 		D11 - Watten Estate, Novena, Thomson\n
 		'''
 		districtCode = citi.districtFilter(1)
-		
+		r.hmset(call.message.chat.id,{"lastupdated":d.today(),"area":"Core Central Districts"}) #Save the area code
+
 	if call.data == 'district2':
 		districtIdentifier = '''Rest of Central Region - inclusive of:\n\n
-		D2 - Anson, Tanjong Pagar\n  
-		D3 - Queenstown, Tiong Bahru\n  
-		D7 - Middle Road, Golden Mile\n 
-		D8 - Little India\n  
-		D12 - Balestier, Toa Payoh, Serangoon\n  
-		D13 - Macpherson, Braddell\n 
-		D14 - Geylang, Eunos\n  
+		D2 - Anson, Tanjong Pagar\n
+		D3 - Queenstown, Tiong Bahru\n
+		D7 - Middle Road, Golden Mile\n
+		D8 - Little India\n
+		D12 - Balestier, Toa Payoh, Serangoon\n
+		D13 - Macpherson, Braddell\n
+		D14 - Geylang, Eunos\n
 		D15 - Katong, Joo Chiat, Amber Road\n\n
 		'''
 		districtCode = citi.districtFilter(2)
-		
+		r.hmset(call.message.chat.id,{"lastupdated":d.today(),"area":"Rest of Central Region"}) #Save the area code
+
+
 	if call.data == 'district3':
 		districtIdentifier = '''Outside Central Region - inclusive of:\n\n
-		D5 - Pasir Panjang, Clementi\n  
-		D16 - Bedok, Upper East Coast\n 
-		D17 - Loyang, Changi\n 
-		D18 - Tampines, Pasir Ris\n  
-		D19 - Serangoon, Hougang, Punggol\n  
-		D20 - Bishan, Ang Mo Kio\n 
-		D21 - Upper Bukit Timah, Ulu Pandan\n  
-		D22 - Jurong\n  
-		D23 - Bukit Panjang, Choa Chu Kang\n 
-		D24 - Lim Chu Kang, Tengah\n  
-		D25 - Kranji, Woodgrove\n  
-		D26 - Upper Thomson, Springleaf\n 
-		D27 - Yishun, Sembawang\n  
+		D5 - Pasir Panjang, Clementi\n
+		D16 - Bedok, Upper East Coast\n
+		D17 - Loyang, Changi\n
+		D18 - Tampines, Pasir Ris\n
+		D19 - Serangoon, Hougang, Punggol\n
+		D20 - Bishan, Ang Mo Kio\n
+		D21 - Upper Bukit Timah, Ulu Pandan\n
+		D22 - Jurong\n
+		D23 - Bukit Panjang, Choa Chu Kang\n
+		D24 - Lim Chu Kang, Tengah\n
+		D25 - Kranji, Woodgrove\n
+		D26 - Upper Thomson, Springleaf\n
+		D27 - Yishun, Sembawang\n
 		D28 - Seletar
 		'''
 		districtCode = citi.districtFilter(3)
+		r.hmset(call.message.chat.id,{"lastupdated":d.today(),"area":"Outside Central Region"}) #Save the area code
 
 def askBudget(call):
 	bot.edit_message_text(chat_id=call.message.chat.id,
-						  message_id=call.message.message_id, 
+						  message_id=call.message.message_id,
 						  text='Enter the minimum budget & maximum budget:\n(Example: 500000,600000)',
 						  reply_markup=False)
-	
+
 def finalisedPreference(call):
-	bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='Your preference:\n\n1) {}\n2) Budget: ${} to ${}\n3) {} \n4) Sort by: {}'.format(propertyTypeSelection, 
+	bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='Your preference:\n\n1) {}\n2) Budget: ${} to ${}\n3) {} \n4) Sort by: {}'.format(propertyTypeSelection,
 																				   minimum, maximum, districtIdentifier, sort)
 				 +'\nEnter /searchnow to see our recommendations specially tailored for you!\n'+
 				 'To update your preferences, enter /mypref\n'
@@ -819,16 +855,24 @@ def finalisedPreference(call):
 def logTextMessage(message):
 	# split if they type 500000,600000
 	if len(message.text.split(','))==2: #'1','2'
-		
+
 		global minimum, maximum, budget
 		minimum = int(message.text.split(',')[0]) #'1,2' -> [1,2]
 		maximum = int(message.text.split(',')[1])
 
 		budget = (citi.budget(minimum,maximum)) #budget logged
+
+		print('\n\n\n')
+		r.hmset(message.chat.id,{"lastupdated":d.today(),"budget":[minimum,maximum]})
+		print(r.hgetall(message.chat.id))
+		redisData = r.hget(message.chat.id,"budget")
+		print(redisData.decode('utf-8'))
+		print('\n\n\n')
+
 		print('Your budget = (minimum,maximum) = {},{}'.format(minimum,maximum))
-		
+
 		bot.send_message(message.chat.id, 'Enter /sort to indicate your search preference')
-		
+
 
 
 
