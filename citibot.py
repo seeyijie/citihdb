@@ -14,7 +14,7 @@ r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 
 #### Variables
-bot_token = "500756386:AAFPCzG-QX8Oa_Rd8AnJgBbZuCoGmB8p0Vk"  #Insert your token!
+bot_token = "610467168:AAHy17omoKKxqo6eL83ilha3bidD3qCMSy0"  #Insert your token!
 
 mstatus = None
 joint = None
@@ -149,6 +149,8 @@ def searchProperty(message):
 	messageStorage = []
 	for index, listing in enumerate(longdict):
 		messageStorage.append(str(longdict[listing]).strip("{}").replace(":'","").replace("'", ''))
+
+	r.hmset(message.chat.id, {"lastupdated":d.today(),"propertylistingsData":messageStorage})
 
 	keyboard = types.InlineKeyboardMarkup()
 	nextButton = types.InlineKeyboardButton(text='Next', callback_data='next')
